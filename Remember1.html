@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Remember Word Cloud</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background: #fff;
+      font-family: Georgia, 'Times New Roman', serif;
+      overflow: hidden;
+    }
+    #wordcloud {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    .word {
+      position: absolute;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .word:hover {
+      transform: scale(1.3);
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="wordcloud"></div>
+  <script>
+    const audioPlayer = new Audio();
+    audioPlayer.volume = 0; // start muted for fade-in
+    let fadeInterval;
+
+    const phrases = [
+      { text: "All of me loves all of you", url: "https://njp46.github.io/Remember/All%20of%20Me.mp3", big: true },
+      { text: "I will always love you", url: "https://njp46.github.io/Remember/I%20Will%20Always%20Love%20You.mp3", big: true },
+      { text: "You’re more than I could ask for", url: "https://njp46.github.io/Remember/More%20Than%20I%20Could%20Ask%20For.mp3", big: true },
+      { text: "The day I met you I think I met myself", url: "https://njp46.github.io/Remember/Day%20I%20Met%20You%20I%20Met%20Myself.mp3", big: false },
+      { text: "All at once everything is different, now that I see you.", url: "https://njp46.github.io/Remember/Tangled.mp3", big: false },
+      { text: "Let me share this whole new world with you.", url: "https://njp46.github.io/Remember/Aladdin.mp3", big: false },
+      { text: "Say you’ll share with me one love, one lifetime.", url: "https://njp46.github.io/Remember/All%20I%20Ask%20of%20You.mp3", big: false },
+      { text: "Cause you’re amazing, just the way you are", url: "https://njp46.github.io/Remember/Just%20The%20Way%20You%20Are.mp3", big: false },
+      { text: "At long last love has arrived, and I thank God I’m alive", url: "https://njp46.github.io/Remember/At%20Long%20Last%20Love%20Has%20Arrived.mp3", big: false },
+      { text: "Find the one you can’t live without, get a ring let your knee hit the ground", url: "https://njp46.github.io/Remember/Buy%20Dirt.mp3", big: false },
+      { text: "You’re just too good to be true; can’t take my eyes off of you", url: "https://njp46.github.io/Remember/Can_t%20Take%20My%20Eyes%20Off%20of%20You.mp3", big: false }
+    ];
+
+    const container = document.getElementById("wordcloud");
+    // Updated colors: big phrases never grey, mostly blues & browns, small phrases include mild greys
+    const bigColors = ["#4A90E2", "#2E86C1", "#A0522D", "#8B4513"]; // blues & browns
+    const smallColors = ["#85C1E9", "#5DADE2", "#AAAAAA", "#BBBBBB", "#999999"];
+
+    const occupied = [];
+
+    function isOverlapping(x, y, width, height) {
+      return occupied.some(box =>
+        !(x + width < box.x || x > box.x + box.width || y + height < box.y || y > box.y + box.height)
+      );
+    }
+
+    // Spiral position with tighter clustering for big words (maxRadius smaller)
+    function spiralPosition(radiusStep, angleStep, maxRadius, width, height, isBig) {
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      let angle = 0;
+      let radius = 0;
+      const maxR = isBig ? maxRadius / 2 : maxRadius;
+
+      while (radius < maxR) {
+        const x = cx + radius * Math.cos(angle) - width / 2;
+        const y = cy + radius * Math.sin(angle) - height / 2;
+
+        if (!isOverlapping(x, y, width, height)) {
+          occupied.push({ x, y, width, height });
+          return { x, y };
+        }
+        angle += angleStep;
+        radius += radiusStep;
+      }
+      return { x: Math.random() * (window.innerWidth - width), y: Math.random() * (window.innerHeight - height) };
+    }
+
+    function fadeInAudio(audio, duration = 500) {
+      audio.volume = 0;
+      const step = 50 / duration;
+      clearInterval(fadeInterval);
+      fadeInterval = setInterval(() => {
+        if (audio.volume < 1) {
+          audio.volume = Math.min(audio.volume + step, 1);
+        } else {
+          clearInterval(fadeInterval);
+        }
+      }, 50);
+    }
+
+    function fadeOutAudio(audio, duration = 500, callback) {
+      const step = 50 / duration;
+      clearInterval(fadeInterval);
+      fadeInterval = setInterval(() => {
+        if (audio.volume > 0) {
+          audio.volume = Math.max(audio.volume - step, 0);
+        } else {
+          clearInterval(fadeInterval);
+          if (callback) callback();
+        }
+      }, 50);
+    }
+
+    function createWords() {
+      const allWords = [];
+      phrases.forEach(phrase => {
+        const reps = phrase.big ? 1 : 6;
+        for (let i = 0; i < reps; i++) {
+          allWords.push({
+            text: phrase.text,
+            url: phrase.url,
+            fontSize: phrase.big ? 48 : Math.floor(Math.random() * 10 + 10),
+            big: phrase.big
+          });
+        }
+      });
+      return allWords.sort(() => Math.random() - 0.5);
+    }
+
+    const words = createWords();
+    words.forEach(word => {
+      const span = document.createElement("span");
+      span.className = "word";
+      span.textContent = word.text.toUpperCase();
+
+      // Color by size: big no grey, small some greys allowed
+      span.style.color = word.big
+        ? bigColors[Math.floor(Math.random() * bigColors.length)]
+        : smallColors[Math.floor(Math.random() * smallColors.length)];
+
+      span.style.fontSize = `${word.fontSize}px`;
+      container.appendChild(span);
+
+      // position words with spiral and clustering for big words
+      const { width, height } = span.getBoundingClientRect();
+      const { x, y } = spiralPosition(5, 0.5, 600, width, height, word.big);
+      span.style.left = `${x}px`;
+      span.style.top = `${y}px`;
+
+      span.addEventListener("click", () => {
+        if (!audioPlayer.paused) {
+          fadeOutAudio(audioPlayer, 500, () => {
+            audioPlayer.src = word.url;
+            audioPlayer.play();
+            fadeInAudio(audioPlayer, 500);
+          });
+        } else {
+          audioPlayer.src = word.url;
+          audioPlayer.play();
+          fadeInAudio(audioPlayer, 500);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
