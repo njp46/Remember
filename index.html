@@ -3,6 +3,15 @@
 			<title>Remember</title>
 			<meta name="author" content="WordArt.com">
 		</head>
+	<script>
+  // This makes sure any <a> tags inside the WordArt are clickable
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.stopPropagation(); // prevents the word cloud JS from blocking the click
+      window.open(this.href, '_blank'); // opens in a new tab
+    });
+  });
+</script>
 		<body>
 			<div class="wordart" data-wordart-src=""></div>
 			<script>
