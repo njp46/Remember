@@ -12,6 +12,53 @@
     });
   });
 </script>
+	<script>
+  window.addEventListener("load", function() {
+    const phraseToURL = {
+      "All of me loves all of you": "https://drive.google.com/file/d/1hy1FYxCjQOPIZJeeZKhIW9_CkW1nwTTn/view?usp=drive_link",
+      "I will always love you": "https://drive.google.com/file/d/1hy1FYxCjQOPIZJeeZKhIW9_CkW1nwTTn/view?usp=drive_link",
+      "You’re more than I could ask for": "https://drive.google.com/file/d/1M_xRUpySQsycM2_u-vZxaDQGTSdNc-Rv/view?usp=drive_link",
+      "The day I met you I think I met myself": "https://drive.google.com/file/d/1UrFtZvIlZQ35qXfQBkLSVUxETI9Mc4dW/view?usp=drive_link",
+      "All at once everything is different, now that I see you.": "https://drive.google.com/file/d/1522ySb7fHYMa1bec7oBcmCkvF5TJaiZN/view?usp=drive_link",
+      "Let me share this whole new world with you.": "https://drive.google.com/file/d/1nV6T7oU4fDD-Cl-Y3FrKWwrGFo6BL5EY/view?usp=drive_link",
+      "Say you’ll share with me one love, one lifetime.": "https://drive.google.com/file/d/1gbj9yzzDfzCEeJjtJMHlQPeBMTeF1DEs/view?usp=drive_link",
+      "Cause you’re amazing, just the way you are": "https://drive.google.com/file/d/1kf5sMHPaJs_3-jZraI30ZIwf5kPFAfUQ/view?usp=drive_link",
+      "At long last love has arrived, and I thank God I’m alive": "https://drive.google.com/file/d/1-I_h6KyuvU6jeIM9flOQ_Yp06EmZ5Z2b/view?usp=drive_link",
+      "Find the one you can’t live without, get a ring let your knee hit the ground": "https://drive.google.com/file/d/1WEfn-CvSH5JV_QLs5PGxiXClRjRImClB/view?usp=drive_link",
+      "You’re just too good to be true; can’t take my eyes off of you": "https://drive.google.com/file/d/1cuk5VP0solMeI6fZyNUxxHbdmlnva5jT/view?usp=drive_link"
+    };
+
+    // The WordArt words are likely rendered inside spans or SVG texts
+    // We’ll search all text nodes and attach listeners when text matches
+
+    // This function traverses nodes to find text matches
+    function walkNodes(node) {
+      if (!node) return;
+
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim();
+        if (phraseToURL[text]) {
+          const parent = node.parentElement;
+          if (parent) {
+            parent.style.cursor = "pointer";
+            parent.addEventListener("click", e => {
+              e.stopPropagation();
+              window.open(phraseToURL[text], "_blank");
+            });
+          }
+        }
+      } else {
+        node.childNodes.forEach(walkNodes);
+      }
+    }
+
+    // Run after a slight delay to allow rendering
+    setTimeout(() => {
+      walkNodes(document.body);
+    }, 1000);
+  });
+</script>
+
 		<body>
 			<div class="wordart" data-wordart-src=""></div>
 			<script>
