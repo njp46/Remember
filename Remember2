@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Remember Word Cloud</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      font-family: Georgia, 'Times New Roman', serif;
+      overflow: hidden;
+    }
+    #wordcloud {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    .word {
+      position: absolute;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: transform 0.2s;
+      transform-origin: left top;
+    }
+    .word:hover {
+      transform: scale(1.3);
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="wordcloud"></div>
+  <script>
+    const audioA = new Audio();
+    const audioB = new Audio();
+    let currentAudio = audioA;
+    let nextAudio = audioB;
+
+    function playAudio(url) {
+      nextAudio.src = url;
+      nextAudio.volume = 0;
+      nextAudio.play();
+
+      let fadeDuration = 500; // ms
+      let step = 50; // interval step ms
+      let volumeStep = step / fadeDuration;
+      let fadeProgress = 0;
+
+      let fadeInterval = setInterval(() => {
+        fadeProgress += volumeStep;
+        currentAudio.volume = Math.max(1 - fadeProgress, 0);
+        nextAudio.volume = Math.min(fadeProgress, 1);
+
+        if (fadeProgress >= 1) {
+          clearInterval(fadeInterval);
+          currentAudio.pause();
+          currentAudio.volume = 1;
+          [currentAudio, nextAudio] = [nextAudio, currentAudio];
+        }
+      }, step);
+    }
+
+    // Original phrases and audio files, unchanged
+    const phrases = [
+      { text: "I WILL ALWAYS LOVE YOU", file: "I Will Always Love You.mp3" },
+      { text: "ALL OF ME LOVES ALL OF YOU", file: "All of Me.mp3" },
+      { text: "YOU’RE MORE THAN I COULD ASK FOR", file: "More Than I Could Ask For.mp3" },
+      { text: "THE DAY I MET YOU I THINK I MET MYSELF", file: "Day I Met You I Met Myself.mp3" },
+      { text: "ALL AT ONCE EVERYTHING IS DIFFERENT, NOW THAT I SEE YOU.", file: "Tangled.mp3" },
+      { text: "LET ME SHARE THIS WHOLE NEW WORLD WITH YOU.", file: "Aladdin.mp3" },
+      { text: "SAY YOU’LL SHARE WITH ME ONE LOVE, ONE LIFETIME.", file: "All I Ask of You.mp3" },
+      { text: "CAUSE YOU’RE AMAZING, JUST THE WAY YOU ARE", file: "Just The Way You Are.mp3" },
+      { text: "AT LONG LAST LOVE HAS ARRIVED, AND I THANK GOD I’M ALIVE", file: "At Long Last Love  Has Arrived.mp3" },
+      { text: "FIND THE ONE YOU CAN’T LIVE WITHOUT, GET A RING LET YOUR KNEE HIT THE GROUND", file: "Buy Dirt.mp3" },
+      { text: "YOU’RE JUST TOO GOOD TO BE TRUE; CAN’T TAKE MY EYES OFF OF YOU", file: "Can_t Take My Eyes Off of You.mp3" }
+    ];
+
+    // Positioning and styling data you sent, matched by index (textId)
+    // Multiplying scale by 12000 to get font-size in px (adjust if needed)
+    // Using matrix translation as left and top in px
+    const positioning = [
+      {
+        fill: "#1993ba",
+        matrix: [
+          [0.0023703703703703703, 0, 30.661878631484377],
+          [0, 0.0023703703703703703, 248.59074074074073]
+        ]
+      },
+      {
+        fill: "#1993ba",
+        matrix: [
+          [0.0017479970866715222, 0, 311.972042882103],
+          [0, 0.0017479970866715222, 244.7063000728332]
+        ]
+      },
+      {
+        fill: "#1993ba",
+        matrix: [
+          [0.0015578311230485143, 0, 239.35000000000002],
+          [0, 0.0015578311230485143, 273.6728719057807]
+        ]
+      },
+      {
+        fill: "#8a8f9f",
+        matrix: [
+          [0.0011420413990007139, 0, 303.2935530459648],
+          [0, 0.0011420413990007139, 215.82144896502496]
+        ]
+      },
+      {
+        fill: "#ca9e4a",
+        matrix: [
+          [0.0009876543209876543, 0, 193.5202730377458],
+          [0, 0.0009876543209876543, 133.58135802469135]
+        ]
+      },
+      {
+        fill: "#8b401b",
+        matrix: [
+          [0.0011851851851851852, 0, 39.998420512405986],
+          [0, 0.0011851851851851852, 195.82037037037037]
+        ]
+      },
+      {
+        fill: "#1993ba",
+        matrix: [
+          [0.0009439528023598821, 0, 162.93795315147256],
+          [0, 0.0009439528023598821, 119.5932448377581]
+        ]
+      },
+      {
+        fill: "#8b401b",
+        matrix: [
+          [0.0011772027174194886, 0, 282.2605325934761],
+          [0, 0.0011772027174194886, 260.08605266935535]
+        ]
+      },
+      {
+        fill: "#8a8f9f",
+        matrix: [
+          [0.0011049723756906078, 0, 312.01571952974285],
+          [0, 0.0011049723756906078, 195.82237569060774]
+        ]
+      },
+      {
+        fill: "#9fd0f4",
+        matrix: [
+          [0.0009439528023598821, 0, 90.55385498666807],
+          [0, 0.0009439528023598821, 132.5932448377581]
+        ]
+      },
+      {
+        fill: "#8b401b",
+        matrix: [
+          [0.0006730991449040906, 0, 77.2331725213774],
+          [0, 0.0006730991449040906, 272.31164314611505]
+        ]
+      }
+    ];
+
+    const container = document.getElementById("wordcloud");
+
+    phrases.forEach((word, i) => {
+      const pos = positioning[i];
+      const scaleX = pos.matrix[0][0];
+      const scaleY = pos.matrix[1][1];
+      const left = pos.matrix[0][2];
+      const top = pos.matrix[1][2];
+      const color = pos.fill;
+
+      // Convert scale to font size (adjust multiplier to taste)
+      const fontSizeX = scaleX * 12000;
+      const fontSizeY = scaleY * 12000;
+      // Use average for font size
+      const fontSize = (fontSizeX + fontSizeY) / 2;
+
+      const span = document.createElement("span");
+      span.className = "word";
+      span.textContent = word.text;
+      span.style.color = color;
+      span.style.left = `${left}px`;
+      span.style.top = `${top}px`;
+      span.style.fontSize = `${fontSize.toFixed(1)}px`;
+      span.style.transform = `scale(1, 1)`; // No extra scaling needed because font size used
+
+      if (word.file) {
+        span.addEventListener("click", () => {
+          const base = "https://njp46.github.io/Remember/";
+          playAudio(base + encodeURIComponent(word.file));
+        });
+      }
+
+      container.appendChild(span);
+    });
+  </script>
+</body>
+</html>
